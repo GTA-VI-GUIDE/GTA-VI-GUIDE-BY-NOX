@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="GTA VI GUIDE">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.__APP_VER__="2026.11.23-1717";</script>
+<script>window.__APP_VER__="2026.11.23-1724";</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
@@ -149,6 +149,7 @@ kbd{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;bac
 .miles li.lock{color:var(--mut)}.miles li span{flex:none;width:20px;text-align:center}
 .kbtn{width:48px;height:48px;border-radius:12px;border:2px solid var(--sun);background:#130821;color:#fff;font:800 20px Manrope,sans-serif;cursor:pointer}
 .nb[disabled]{opacity:.4}
+.stg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.stg div{background:rgba(255,255,255,.06);border-radius:14px;padding:12px}.stg b{display:block;font:400 30px/1 Anton,Impact,sans-serif;background:linear-gradient(100deg,#ff2d87,#ff7a45 55%,#ffc24a);-webkit-background-clip:text;background-clip:text;color:transparent}.stg span{font-size:13px;color:var(--mut)}.stb{display:flex;align-items:flex-end;gap:6px;height:60px;margin:6px 0}.stb i{flex:1;background:linear-gradient(#ff2d87,#ff7a45);border-radius:5px 5px 2px 2px}
 .adminlink{float:right;border:0;background:none;color:var(--mut);opacity:.5;font-size:20px;width:44px;height:44px;cursor:pointer}
 .hero-prog{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;background:radial-gradient(120% 140% at 0% 0%,#5a1a6e 0%,#1f0f35 55%);border:1.5px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 18px 40px -20px rgba(255,45,135,.6)}
 @media(max-width:520px){.hero-prog{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.hp-row{justify-content:center}}
@@ -588,11 +589,34 @@ const ghTok=()=>{try{return localStorage.getItem("lp-gh")||""}catch(e){return ""
 const today=()=>new Date().toISOString().slice(0,10);
 const b64e=t=>btoa(unescape(encodeURIComponent(t))),b64d=t=>decodeURIComponent(escape(atob(t.replace(/\s/g,""))));
 function pendCount(){return Object.keys(PEND.videos).length+PEND.fiches.length+PEND.digicodes.length+PEND.triches.length}
+
+/* ---- compteur de visites (abacus, sans cookie ni compte) ---- */
+const ST_NS="gta-vi-guide-by-nox",ST_URL="https://abacus.jasoncameron.dev";
+const stHit=k=>fetch(`${ST_URL}/hit/${ST_NS}/${k}`).catch(()=>{});
+const stGet=k=>fetch(`${ST_URL}/get/${ST_NS}/${k}`).then(r=>r.ok?r.json():{value:0}).then(j=>j.value||0).catch(()=>null);
+const dayKey=d=>"jour-"+d.toISOString().slice(0,10);
+(function countVisit(){try{
+ if(location.hostname!=="gta-vi-guide.github.io")return;
+ if(localStorage.getItem("lp-gh")||localStorage.getItem("lp-me"))return; // ne compte pas ton propre tel
+ if(!sessionStorage.getItem("lp-seen")){sessionStorage.setItem("lp-seen","1");stHit("visites");if(/[?&]tt\b/.test(location.search))stHit("depuis-tiktok")}
+ if(!localStorage.getItem("lp-uid")){localStorage.setItem("lp-uid","1");stHit("appareils")}
+ const dk=dayKey(new Date());if(localStorage.getItem("lp-day")!==dk){localStorage.setItem("lp-day",dk);stHit(dk)}
+ const inst=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+ if(inst&&!localStorage.getItem("lp-inst")){localStorage.setItem("lp-inst","1");stHit("installs")}
+}catch(e){}})();
+async function loadStats(){const el=document.getElementById("astats");if(!el)return;
+ const d=[...Array(7)].map((_,i)=>{const x=new Date();x.setDate(x.getDate()-i);return dayKey(x)});
+ const [v,a,i,t,...days]=await Promise.all(["visites","appareils","installs","depuis-tiktok",...d].map(stGet));
+ if(v===null){el.innerHTML='<p class="unl">Compteur injoignable pour l\'instant.</p>';return}
+ const f=n=>Number(n||0).toLocaleString("fr-FR"),max=Math.max(1,...days);
+ el.innerHTML=`<div class="stg"><div><b>${f(a)}</b><span>personnes</span></div><div><b>${f(v)}</b><span>visites</span></div><div><b>${f(days[0])}</b><span>aujourd'hui</span></div><div><b>${f(i)}</b><span>sur l'accueil</span></div></div>
+ <div class="stb">${days.slice().reverse().map((n,k)=>`<i style="height:${Math.max(4,n/max*100)}%" title="${f(n)}"></i>`).join("")}</div><p class="unl">7 derniers jours · ${f(t)} visites venues de TikTok (lien avec ?tt). Ton tel n'est pas compté.</p>`}
 function adminView(){
  if(!ADMIN)return `<div class="step"><h2>Admin</h2><p class="sub">Accès réservé.</p></div><div class="card"><div class="frm one"><label>Code d'accès<input id="acode" type="password" autocomplete="off"></label></div><button class="nb home" id="alogin" type="button">Entrer</button><p class="unl" id="amsg"></p></div>`;
  const names=D.map(d=>`<option value="${esc(d.n)}">`).join(""),cn=CHEATS.map(c=>`<option value="${esc(c[1])}">`).join("");
  return `<datalist id="dl-f">${names}</datalist><datalist id="dl-c">${cn}</datalist>
  <div class="step"><h2>Admin</h2><p class="sub">Ce que tu ajoutes ici part sur GitHub : toutes les apps le voient à la prochaine ouverture.</p></div>
+ <div class="card"><b>Statistiques</b><div id="astats"><p class="unl">Chargement…</p></div></div>
  <div class="card"><b>Jeton GitHub</b><p class="unl">${ghTok()?"Enregistré sur ce téléphone ✓":"Pas encore enregistré : il faut un jeton pour publier."}</p><div class="frm one"><label>Coller un nouveau jeton<input id="gtok" type="password" autocomplete="off" placeholder="github_pat_…"></label></div><button class="nb" id="gsave" type="button">Enregistrer le jeton</button></div>
  <div class="card"><b>Vidéo sur une fiche</b><div class="frm one"><label>Fiche<input id="vf" list="dl-f" placeholder="Tape le nom…"></label><label>Lien YouTube<input id="vy" type="url" placeholder="https://www.youtube.com/…"></label><label>Lien TikTok<input id="vt" type="url" placeholder="https://www.tiktok.com/@…/video/…"></label></div><button class="nb" data-add="video" type="button">Ajouter</button></div>
  <div class="card"><b>Nouvelle fiche</b><div class="frm one"><label>Catégorie<select id="nc"><option value="argent">Plan argent</option><option value="armes">Arme</option><option value="eggs">Easter egg</option></select></label><label>Type (ex. Chapitre 1, Sniper, Secret)<input id="nt"></label><label>Nom<input id="nn"></label><label>Lieu<input id="nz" placeholder="ex. Entrepôt rouge · près de Hamlet"></label><label>Comment faire<textarea id="nh" rows="4"></textarea></label><label>Mots-clés pour la recherche<input id="nk" placeholder="hangar rouge, coffre, drogue…"></label><label>Lien YouTube (facultatif)<input id="ny" type="url"></label><label>Lien TikTok (facultatif)<input id="ntt" type="url"></label></div><button class="nb" data-add="fiche" type="button">Ajouter</button></div>
@@ -604,7 +628,7 @@ function v$(id){const e=document.getElementById(id);return e?e.value.trim():""}
 function adminMsg(t){const e=document.getElementById("amsg");if(e)e.textContent=t;toast(t)}
 const okUrl=(u,host)=>!u||(/^https:\/\//.test(u)&&u.includes(host));
 async function adminClick(t){
- if(t.id==="alogin"){const ok=(await sha(v$("acode")))===ADMIN_HASH;if(ok){ADMIN=true;try{sessionStorage.setItem("lp-admin","1")}catch(e){}draw()}else adminMsg("Code incorrect");return true}
+ if(t.id==="alogin"){const ok=(await sha(v$("acode")))===ADMIN_HASH;if(ok){ADMIN=true;try{sessionStorage.setItem("lp-admin","1");localStorage.setItem("lp-me","1")}catch(e){}draw()}else adminMsg("Code incorrect");return true}
  if(t.id==="alogout"){ADMIN=false;try{sessionStorage.removeItem("lp-admin")}catch(e){}draw();return true}
  if(t.id==="gsave"){const k=v$("gtok");if(!k)return adminMsg("Colle le jeton d'abord"),true;try{localStorage.setItem("lp-gh",k)}catch(e){}draw();toast("Jeton enregistré sur ce téléphone");return true}
  if(t.dataset.k){const i=document.getElementById("tc");i.value=t.dataset.k==="del"?i.value.slice(0,-1):i.value+t.dataset.k;return true}
@@ -681,7 +705,7 @@ function draw(){
   <div class="chips" id="cg">${["Tout",...groups].map(g=>`<button aria-pressed="${(S.g||"Tout")===g}" data-g="${g}">${g}</button>`).join("")}</div>
   <div class="cheats">${CHEATS.filter(c=>!S.g||S.g==="Tout"||c[0]===S.g).sort((a,b)=>(!!b[3])-(!!a[3])).map(([g,n,e,code,u])=>`<article class="cheat${done["triche:"+n]?" done":""}"><button class="chk" aria-pressed="${!!done["triche:"+n]}" data-id="${esc("triche:"+n)}">${done["triche:"+n]?"Débloquée":"Pas débloquée"}</button><div><p class="kind">${g}</p><h3>${esc(n)}</h3><p class="eff">${esc(e)}</p></div><div class="pad">${code?[...code].map(k=>`<kbd>${k}</kbd>`).join(""):`<span class="tbc">Code pas encore connu</span>`}</div><p class="unl">Débloquer : ${esc(u)}</p></article>`).join("")}</div>`;return}
  if(S.c==="story"){out.innerHTML=storyView();return}
- if(S.c==="admin"){out.innerHTML=adminView();return}
+ if(S.c==="admin"){out.innerHTML=adminView();loadStats();return}
  if(S.c==="codes"){out.innerHTML=`<div class="step"><h2>Tous les codes</h2><p class="sub">Digicodes, coffres et mots de passe trouvés.</p></div><div class="codes">${CODES.map(([c,l])=>`<div class="code"><b>${esc(c)}</b><span>${esc(l)}</span></div>`).join("")}</div>`;return}
  if(S.c==="news"){const l=news();
   if(!l.length){out.innerHTML=`<div class="step"><h2>Nouveautés</h2><p class="sub">Tout ce qui est ajouté après le ${UPDATED_FIRST} arrive ici, rangé par date.</p></div><p class="empty">Rien de neuf pour l'instant. Reviens après la prochaine mise à jour.</p>`;return}

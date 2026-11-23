@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="GTA VI GUIDE">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<script>window.__APP_VER__="2026.11.23-1724";</script>
+<script>window.__APP_VER__="2026.11.23-1732";</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
@@ -593,7 +593,7 @@ function pendCount(){return Object.keys(PEND.videos).length+PEND.fiches.length+P
 /* ---- compteur de visites (abacus, sans cookie ni compte) ---- */
 const ST_NS="gta-vi-guide-by-nox",ST_URL="https://abacus.jasoncameron.dev";
 const stHit=k=>fetch(`${ST_URL}/hit/${ST_NS}/${k}`).catch(()=>{});
-const stGet=k=>fetch(`${ST_URL}/get/${ST_NS}/${k}`).then(r=>r.ok?r.json():{value:0}).then(j=>j.value||0).catch(()=>null);
+const stGet=k=>fetch(`${ST_URL}/get/${ST_NS}/${k}`,{signal:AbortSignal.timeout?AbortSignal.timeout(25000):undefined}).then(r=>r.ok?r.json():{value:0}).then(j=>j.value||0).catch(()=>null);
 const dayKey=d=>"jour-"+d.toISOString().slice(0,10);
 (function countVisit(){try{
  if(location.hostname!=="gta-vi-guide.github.io")return;
@@ -616,7 +616,7 @@ function adminView(){
  const names=D.map(d=>`<option value="${esc(d.n)}">`).join(""),cn=CHEATS.map(c=>`<option value="${esc(c[1])}">`).join("");
  return `<datalist id="dl-f">${names}</datalist><datalist id="dl-c">${cn}</datalist>
  <div class="step"><h2>Admin</h2><p class="sub">Ce que tu ajoutes ici part sur GitHub : toutes les apps le voient à la prochaine ouverture.</p></div>
- <div class="card"><b>Statistiques</b><div id="astats"><p class="unl">Chargement…</p></div></div>
+ <div class="card"><b>Statistiques</b><div id="astats"><p class="unl">Chargement… (ça peut prendre 10 secondes)</p></div></div>
  <div class="card"><b>Jeton GitHub</b><p class="unl">${ghTok()?"Enregistré sur ce téléphone ✓":"Pas encore enregistré : il faut un jeton pour publier."}</p><div class="frm one"><label>Coller un nouveau jeton<input id="gtok" type="password" autocomplete="off" placeholder="github_pat_…"></label></div><button class="nb" id="gsave" type="button">Enregistrer le jeton</button></div>
  <div class="card"><b>Vidéo sur une fiche</b><div class="frm one"><label>Fiche<input id="vf" list="dl-f" placeholder="Tape le nom…"></label><label>Lien YouTube<input id="vy" type="url" placeholder="https://www.youtube.com/…"></label><label>Lien TikTok<input id="vt" type="url" placeholder="https://www.tiktok.com/@…/video/…"></label></div><button class="nb" data-add="video" type="button">Ajouter</button></div>
  <div class="card"><b>Nouvelle fiche</b><div class="frm one"><label>Catégorie<select id="nc"><option value="argent">Plan argent</option><option value="armes">Arme</option><option value="eggs">Easter egg</option></select></label><label>Type (ex. Chapitre 1, Sniper, Secret)<input id="nt"></label><label>Nom<input id="nn"></label><label>Lieu<input id="nz" placeholder="ex. Entrepôt rouge · près de Hamlet"></label><label>Comment faire<textarea id="nh" rows="4"></textarea></label><label>Mots-clés pour la recherche<input id="nk" placeholder="hangar rouge, coffre, drogue…"></label><label>Lien YouTube (facultatif)<input id="ny" type="url"></label><label>Lien TikTok (facultatif)<input id="ntt" type="url"></label></div><button class="nb" data-add="fiche" type="button">Ajouter</button></div>

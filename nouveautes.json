@@ -1,7 +1,13 @@
 {
-  "maj": "",
+  "maj": "27 nov. 2026",
   "fiches": [],
-  "triches": [],
+  "triches": [
+    {
+      "n": "Bourré",
+      "code": "↑←→↑↑←→↑←→",
+      "a": "2026-11-27"
+    }
+  ],
   "digicodes": [],
   "trouvees": []
 }
